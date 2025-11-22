@@ -1,4 +1,5 @@
 <script>
+  import { base } from '$app/paths';
   import { onMount, onDestroy } from "svelte";
   import { goto } from "$app/navigation";
 
@@ -6,10 +7,10 @@
   let needleEl;
 
   function go(dir) {
-    if (dir === "N") goto("/");
-    if (dir === "E") goto("/skills");
-    if (dir === "S") goto("/experience");
-    if (dir === "W") goto("/projects");
+    if (dir === "N") goto(`${base}/`);
+    if (dir === "E") goto(`${base}/skills`);
+    if (dir === "S") goto(`${base}/experience`);
+    if (dir === "W") goto(`${base}/projects`);
   }
 
   function updateNeedle(e) {

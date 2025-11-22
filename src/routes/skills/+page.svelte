@@ -1,4 +1,5 @@
 <script>
+    import { base } from '$app/paths';
   // Organized skills groups based on your resume
   const skills = [
     {
@@ -91,7 +92,7 @@
       <div class="grid">
         {#each group.items as item}
           <div class="item">
-            <img src={item.icon} alt={item.name} class="icon"/>
+            <img src={base}{item.icon} alt={item.name} class="icon"/>
             <span>{item.name}</span>
           </div>
         {/each}

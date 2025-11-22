@@ -1,4 +1,5 @@
 <script>
+import { base } from '$app/paths';
   import Timeline from '$lib/components/Timeline.svelte';
 </script>
 
@@ -6,7 +7,7 @@
   <div class="content">
     <h1 class="name">Danush Singla</h1>
 
-    <img src="/headshot.png" alt="Danush Singla" class="profile-pic" />
+    <img src="{base}/headshot.png" alt="Danush Singla" class="profile-pic" />
 
     <h2 class="subtitle">About Me</h2>
 

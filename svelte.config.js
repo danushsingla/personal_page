@@ -1,17 +1,16 @@
 import adapter from '@sveltejs/adapter-static';
 
-const dev = process.argv.includes('dev');
-
 export default {
   kit: {
-    adapter: adapter(),
-
-    prerender: {
-      handleHttpError: "ignore"
-    },
-
+    adapter: adapter({
+      fallback: '404.html'
+    }),
     paths: {
-      base: dev ? "" : "/personal_page",
+      // We are HARDCODING this. 
+      // Do not use a variable. Do not use empty string.
+      base: '/personal_page',
+      
+      // Explicitly tell SvelteKit NOT to use relative paths
       relative: false
     }
   }
