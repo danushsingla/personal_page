@@ -7,12 +7,12 @@ export default {
     adapter: adapter(),
 
     prerender: {
-      // allow static pages to be exported
       handleHttpError: "ignore"
     },
 
     paths: {
-      base: dev ? "" : "/personal_page"
+      base: dev ? "" : "/personal_page",
+      relative: false
     }
   }
 };
