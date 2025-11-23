@@ -26,8 +26,8 @@
         { name: "PyCharm", icon: "/icons/pycharm.svg" },
         { name: "Eclipse", icon: "/icons/eclipseide.svg" },
         { name: "Linux", icon: "/icons/linux.svg" },
-        { name: "QuestaSim", icon: "/icons/questa.svg" },
-        { name: "HiPerGator (UF HPC)", icon: "/icons/hpg.svg" }
+        { name: "Quartus/QuestaSim", icon: "/icons/quartus.svg" },
+        { name: "HiPerGator (UF HPC)", icon: "/icons/hipergator.svg" }
       ]
     },
 
@@ -52,12 +52,11 @@
       items: [
         { name: "PyTorch", icon: "/icons/pytorch.svg" },
         { name: "OpenCV", icon: "/icons/opencv.svg" },
-        { name: "Yolo (Ultralytics)", icon: "/icons/yolo.svg" },
-        { name: "Transformers", icon: "/icons/transformers.svg" },
-        { name: "Reinforcement Learning", icon: "/icons/rl.svg" },
-        { name: "Computer Vision", icon: "/icons/cv.svg" },
-        { name: "LIDAR", icon: "/icons/lidar.svg" },
-        { name: "Amazon Personalize", icon: "/icons/amazonpersonalize.svg" }
+        { name: "Yolo (Ultralytics)/Computer Vision", icon: "/icons/yolo.svg" },
+        { name: "Transformers/LLMs", icon: "/icons/transformer.svg" },
+        { name: "Reinforcement Learning", icon: "/icons/pong.svg" },
+        { name: "LIDAR", icon: "/icons/mil.svg" },
+        { name: "Amazon Personalize", icon: "/icons/amazon_personalize.svg" }
       ]
     },
 
