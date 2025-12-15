@@ -170,10 +170,18 @@
     gap: 0.9rem;
   }
 
-  .search {
-    display: grid;
-    gap: 0.35rem;
-  }
+.search input {
+  width: 100%;
+  box-sizing: border-box; /* ✅ add this */
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--ink);
+  outline: none;
+  font-family: inherit;
+}
+
 
   .label {
     font-size: 0.9rem;
