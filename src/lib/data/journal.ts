@@ -594,8 +594,8 @@ export const chapters: JournalChapterData[] = [
           realTitle: "DiffLogicVisualizer",
           oneLiner: "Turning opaque weights into visible decisions.",
           vibe: "A lantern held up to the hidden gates behind an answer."
-        }
-        // No link included here because no actual URL was provided in the text you pasted.
+        },
+        links: [{ label: "GitHub Repository", href: "https://github.com/danushsingla/DiffLogicVisualizer" }]
       }
     ]
   }
