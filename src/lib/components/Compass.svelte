@@ -17,12 +17,12 @@
     if (!compassEl || !needleEl) return;
 
     const rect = compassEl.getBoundingClientRect();
-
     const cx = rect.left + rect.width / 2;
     const cy = rect.top  + rect.height / 2;
 
-    const mx = e.clientX;
-    const my = e.clientY;
+    // If we don't have mouse coords yet, aim "north" by default.
+    const mx = e?.clientX ?? cx;
+    const my = e?.clientY ?? (cy - 1);
 
     const angleRad = Math.atan2(my - cy, mx - cx);
     const angleDeg = angleRad * (180 / Math.PI) + 90;
@@ -31,9 +31,12 @@
   }
 
   onMount(() => {
-    // SSR-safe: only runs in the browser
     if (typeof window !== "undefined") {
       window.addEventListener("mousemove", updateNeedle);
+
+      // ✅ set initial position immediately (prevents the “offcenter until first move”)
+      updateNeedle({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+      // (or just: updateNeedle(null);  if you want it to start pointing straight up)
     }
   });
 
@@ -43,6 +46,7 @@
     }
   });
 </script>
+
 
 
 <style>
