@@ -5,79 +5,86 @@
   let query = "";
   let activeTag: string = "ALL";
 
-  const norm = (s: string) => s.toLowerCase().trim();
+  const norm = (s: string) => (s ?? "").toLowerCase().trim();
 
   // Collect tags from data
   const allTags = Array.from(
-    new Set(chapters.flatMap(c => c.entries.flatMap(e => e.tags)))
-  ).sort();
+    new Set(
+      chapters.flatMap((c: any) => (c.entries ?? []).flatMap((e: any) => e.tags ?? []))
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  const matchesQuery = (entry: any, q: string) => {
+    if (!q) return true;
+
+    // Add whatever fields you want searchable here:
+    const hay = [
+      entry.title,
+      entry.subtitle,
+      entry.era,
+      entry.stamp,
+      ...(entry.tags ?? []),
+      ...(entry.stack ?? []),
+      entry.story?.objective,
+      entry.story?.obstacles,
+      entry.story?.breakthrough,
+      entry.story?.takeaway
+    ]
+      .filter(Boolean)
+      .map((x) => String(x).toLowerCase())
+      .join(" | ");
+
+    return hay.includes(q);
+  };
+
+  $: q = norm(query);
 
   $: filteredChapters = chapters
-    .map((c) => {
-      const entries = c.entries.filter((e) => {
-        const tagOk = activeTag === "ALL" ? true : e.tags.includes(activeTag);
-        if (!tagOk) return false;
-
-        const q = norm(query);
-        if (!q) return true;
-
-        const hay = norm(
-          [
-            e.title,
-            e.subtitle,
-            e.era,
-            e.stamp,
-            ...e.tags,
-            ...e.stack,
-            e.story.objective,
-            e.story.obstacles,
-            e.story.breakthrough,
-            e.story.takeaway
-          ].join(" ")
-        );
-
-        return hay.includes(q);
+    .map((c: any) => {
+      const entries = (c.entries ?? []).filter((e: any) => {
+        const tagOk = activeTag === "ALL" ? true : (e.tags ?? []).includes(activeTag);
+        const qOk = matchesQuery(e, q);
+        return tagOk && qOk;
       });
-
       return { ...c, entries };
     })
-    .filter((c) => c.entries.length > 0);
+    .filter((c: any) => (c.entries ?? []).length > 0);
 </script>
 
 <svelte:head>
-  <title>Experiences | Journal</title>
+  <title>Projects | Field Journal</title>
 </svelte:head>
 
-<section class="wrap">
+<section class="wrap journalTheme">
   <header class="head">
-    <div>
-      <h1>Field Journal</h1>
-      <p class="sub">
-        Chapters from the road — projects and experiences recorded as objectives, obstacles, and lessons.
-      </p>
+    <div class="titleBlock">
+      <h1>Projects</h1>
     </div>
 
     <div class="controls">
       <label class="search">
-        <span>Search</span>
         <input bind:value={query} placeholder="Try: DMA, ROS2, OS, PostgreSQL…" />
       </label>
 
       <div class="tags" role="tablist" aria-label="Tag filter">
         <button
-          type="button"
-          class:selected={activeTag === "ALL"}
+          class="tag"
+          class:active={activeTag === "ALL"}
           on:click={() => (activeTag = "ALL")}
+          type="button"
+          role="tab"
           aria-selected={activeTag === "ALL"}
         >
-          ALL
+          All
         </button>
 
-        {#each allTags as t}
+        {#each allTags as t (t)}
           <button
-            type="button"
-            class:selected={activeTag === t}
+            class="tag"
+            class:active={activeTag === t}
             on:click={() => (activeTag = t)}
+            type="button"
+            role="tab"
             aria-selected={activeTag === t}
           >
             {t}
@@ -87,7 +94,7 @@
     </div>
   </header>
 
-  <div class="paper">
+  <div class="body">
     {#if filteredChapters.length === 0}
       <div class="empty">
         <h2>No matching entries</h2>
@@ -102,6 +109,37 @@
 </section>
 
 <style>
+  /* ===== Parchment Theme Scope ===== */
+  .journalTheme {
+    --paper: #f6eed0;
+    --paper-deep: #ead9a6;
+    --ink: #1e1a12;
+    --muted: rgba(30, 26, 18, 0.74);
+    --line: rgba(30, 26, 18, 0.18);
+    --line-strong: rgba(30, 26, 18, 0.28);
+
+    --gold: #b8891d;
+    --gold-soft: #d9b24c;
+
+    --card: rgba(246, 238, 208, 0.78);
+    --card-2: rgba(234, 217, 166, 0.55);
+
+    --shadow: 0 16px 46px rgba(10, 8, 5, 0.18);
+    --radius: 16px;
+
+    color: var(--ink);
+    font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Garamond, Georgia, serif;
+
+    background:
+      radial-gradient(1200px 800px at 20% 10%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 55%),
+      radial-gradient(900px 700px at 80% 25%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 60%),
+      linear-gradient(180deg, var(--paper), var(--paper-deep));
+
+    border: 1px solid var(--line);
+    border-radius: calc(var(--radius) + 6px);
+    box-shadow: var(--shadow);
+  }
+
   .wrap {
     max-width: 980px;
     margin: 0 auto;
@@ -110,7 +148,7 @@
 
   .head {
     display: grid;
-    gap: 1rem;
+    gap: 1.1rem;
     margin-bottom: 1.25rem;
   }
 
@@ -123,37 +161,39 @@
 
   .sub {
     margin: 0.5rem 0 0;
-    max-width: 70ch;
-    opacity: 0.86;
+    max-width: 72ch;
+    color: var(--muted);
   }
 
   .controls {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.9rem;
   }
 
   .search {
     display: grid;
     gap: 0.35rem;
-    max-width: 520px;
   }
 
-  .search span {
-    font-size: 0.85rem;
-    opacity: 0.8;
+  .label {
+    font-size: 0.9rem;
+    color: var(--muted);
   }
 
-  input {
-    padding: 0.7rem 0.85rem;
+  .search input {
+    width: 100%;
+    padding: 0.75rem 0.85rem;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(0,0,0,0.18);
-    color: inherit;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.35);
+    color: var(--ink);
     outline: none;
+    font-family: inherit;
   }
 
-  input:focus {
-    border-color: rgba(255,255,255,0.28);
+  .search input:focus {
+    border-color: rgba(184, 137, 29, 0.55);
+    box-shadow: 0 0 0 3px rgba(184, 137, 29, 0.18);
   }
 
   .tags {
@@ -162,38 +202,39 @@
     gap: 0.5rem;
   }
 
-  .tags button {
-    padding: 0.4rem 0.7rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(0,0,0,0.16);
-    color: inherit;
+  .tag {
     cursor: pointer;
-    transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--ink);
+    font-family: inherit;
     font-size: 0.92rem;
+    transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
   }
 
-  .tags button:hover {
+  .tag:hover {
     transform: translateY(-1px);
-    border-color: rgba(255,255,255,0.22);
-    background: rgba(0,0,0,0.22);
+    border-color: rgba(184, 137, 29, 0.55);
+    background: rgba(255, 255, 255, 0.35);
   }
 
-  .tags button.selected {
-    border-color: rgba(255,255,255,0.34);
-    background: rgba(255,255,255,0.08);
+  .tag.active {
+    border-color: rgba(184, 137, 29, 0.8);
+    background: rgba(217, 178, 76, 0.25);
   }
 
-  .paper {
-    position: relative;
-    padding: 1.25rem 1rem;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(0,0,0,0.14);
+  .body {
+    display: grid;
+    gap: 1rem;
   }
 
   .empty {
     padding: 1rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.25);
   }
 
   .empty h2 {
@@ -203,6 +244,6 @@
 
   .empty p {
     margin: 0;
-    opacity: 0.85;
+    color: var(--muted);
   }
 </style>

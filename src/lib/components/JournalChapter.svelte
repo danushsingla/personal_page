@@ -26,26 +26,28 @@
 
 <style>
   .chapter {
-    padding: 0.75rem 0.35rem 1.2rem;
+    padding: 0.9rem 0.85rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--card);
   }
 
   .chHead {
     display: grid;
     gap: 0.25rem;
-    margin: 0.25rem 0 0.85rem;
-    padding-left: 0.4rem;
+    margin-bottom: 0.75rem;
   }
 
-  .chHead h2 {
+  h2 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     letter-spacing: -0.01em;
   }
 
   .chHead p {
     margin: 0;
-    opacity: 0.78;
-    max-width: 70ch;
+    color: var(--muted);
+    max-width: 75ch;
   }
 
   .entries {

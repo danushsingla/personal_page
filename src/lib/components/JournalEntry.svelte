@@ -1,175 +1,279 @@
+<!-- src/lib/components/JournalEntry.svelte -->
 <script lang="ts">
   export let entry: {
     id: string;
-    page: number;
-    era: string;
-    stamp: string;          // e.g. "Systems", "Robotics", "Embedded"
+    page?: number;
+    era?: string;
+    dates?: string;
+    stamp?: string;
     title: string;
-    subtitle: string;
-    stack: string[];
-    tags: string[];
-    story: {
-      objective: string;
-      obstacles: string;
-      breakthrough: string;
-      takeaway: string;
+    role?: string;
+    subtitle?: string;
+    stack?: string[];
+    tags?: string[];
+    story?: {
+      objective?: string;
+      obstacles?: string;
+      breakthrough?: string;
+      takeaway?: string;
     };
     links?: Array<{ label: string; href: string }>;
+    fun?: {
+      displayTitle?: string;
+      realTitle?: string;
+      oneLiner?: string;
+      vibe?: string;
+    };
   };
 
   let open = false;
+
+  const safe = (v: any, fallback = "—") => (v && String(v).trim().length ? v : fallback);
+
+  $: githubLink = entry.links?.find((l) => (l.label ?? "").toLowerCase().includes("git"));
+
+  // Choose what we want to be the "real" visible project name
+  $: realProjectTitle = entry.fun?.realTitle ?? entry.title;
 </script>
 
-<article class="row">
-  <aside class="margin" aria-hidden="true">
-    <div class="pageNo">p. {entry.page}</div>
-    <div class="stamp">{entry.stamp}</div>
-    <div class="inkTrail"></div>
-  </aside>
-
-  <div class="card">
+<article class="entry" class:open>
+  <div class="topRow">
     <button class="top" type="button" on:click={() => (open = !open)} aria-expanded={open}>
-      <div class="meta">
-        <span class="era">{entry.era}</span>
-        <span class="dot">•</span>
-        <span class="tagsInline">{entry.tags.slice(0, 2).join(" · ")}</span>
-      </div>
+      <div class="left">
+        <div class="metaTop">
+          {#if entry.page !== undefined}
+            <span class="pageNo">Pg. {entry.page}</span>
+            <span class="dot">•</span>
+          {/if}
 
-      <h3>{entry.title}</h3>
-      <p class="sub">{entry.subtitle}</p>
-
-      <div class="bottom">
-        <div class="stack">
-          {#each entry.stack as s (s)}
-            <span class="chip">{s}</span>
-          {/each}
+          {#if entry.stamp}
+            <span class="stamp">{entry.stamp}</span>
+          {/if}
         </div>
-        <span class="toggle">{open ? "Close" : "Open"} →</span>
+
+        <div class="meta">
+          <span class="era">{safe(entry.era)}</span>
+
+          {#if entry.dates}
+            <span class="dot">•</span>
+            <span class="dates">{entry.dates}</span>
+          {/if}
+
+          {#if (entry.tags ?? []).length > 0}
+            <span class="dot">•</span>
+            <span class="tagsInline">{(entry.tags ?? []).slice(0, 3).join(" · ")}</span>
+          {/if}
+        </div>
+
+        <!-- ✅ Make the REAL project name the hero -->
+        <h3 class="projectTitle">{realProjectTitle}</h3>
+
+        <!-- ✅ Fun title becomes a subtle “epithet” (won’t confuse anyone) -->
+        {#if entry.fun?.displayTitle}
+          <div class="funLine">
+            {#if entry.role}
+              {entry.role} <span class="dot">•</span>
+            {/if}
+            “{entry.fun.displayTitle}”
+          </div>
+        {/if}
+
+
+        {#if entry.fun?.oneLiner}
+          <div class="funOne">{entry.fun.oneLiner}</div>
+        {/if}
+
+        {#if entry.subtitle}
+          <p class="sub">{entry.subtitle}</p>
+        {/if}
+
+        <div class="bottom">
+          <div class="stack">
+            {#each (entry.stack ?? []) as s (s)}
+              <span class="chip">{s}</span>
+            {/each}
+          </div>
+
+          <span class="toggle">{open ? "Close" : "More Info"} →</span>
+        </div>
+
+        {#if entry.fun?.vibe}
+          <div class="vibe">{entry.fun.vibe}</div>
+        {/if}
       </div>
     </button>
 
-    <div class="body" class:open>
-      <div class="grid">
-        <section>
-          <h4>Objective</h4>
-          <p>{entry.story.objective}</p>
-        </section>
-        <section>
-          <h4>Obstacles</h4>
-          <p>{entry.story.obstacles}</p>
-        </section>
-        <section>
-          <h4>Breakthrough</h4>
-          <p>{entry.story.breakthrough}</p>
-        </section>
-        <section>
-          <h4>Takeaway</h4>
-          <p>{entry.story.takeaway}</p>
-        </section>
-      </div>
+    {#if githubLink}
+      <a
+        class="github"
+        href={githubLink.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="View on GitHub"
+        on:click|stopPropagation
+      >
+        GitHub ↗
+      </a>
+    {/if}
+  </div>
 
-      {#if entry.links?.length}
-        <div class="links">
-          {#each entry.links as l (l.href)}
-            <a href={l.href} target="_blank" rel="noreferrer">{l.label} →</a>
-          {/each}
-        </div>
-      {/if}
+  <div class="body" class:open>
+    <div class="grid">
+      <section>
+        <h4>Objective</h4>
+        <p>{safe(entry.story?.objective)}</p>
+      </section>
+
+      <section>
+        <h4>Obstacles</h4>
+        <p>{safe(entry.story?.obstacles)}</p>
+      </section>
+
+      <section>
+        <h4>Breakthrough</h4>
+        <p>{safe(entry.story?.breakthrough)}</p>
+      </section>
+
+      <section>
+        <h4>Takeaway</h4>
+        <p>{safe(entry.story?.takeaway)}</p>
+      </section>
     </div>
   </div>
 </article>
 
 <style>
-  .row {
-    display: grid;
-    grid-template-columns: 92px 1fr;
-    gap: 0.9rem;
-    align-items: start;
-  }
-
-  .margin {
-    position: relative;
-    padding-top: 0.5rem;
-    opacity: 0.9;
-  }
-
-  .pageNo {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.9rem;
-    opacity: 0.85;
-  }
-
-  .stamp {
-    margin-top: 0.45rem;
-    display: inline-block;
-    padding: 0.2rem 0.45rem;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    font-size: 0.85rem;
-  }
-
-  .inkTrail {
-    margin-top: 0.65rem;
-    width: 2px;
-    height: 100%;
-    border-radius: 2px;
-    background: linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.0),
-      rgba(255,255,255,0.22),
-      rgba(255,255,255,0.0)
-    );
-  }
-
-  .card {
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(0,0,0,0.16);
+  .entry {
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.24);
     overflow: hidden;
+    transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+  }
+
+  .entry:hover {
+    transform: translateY(-1px);
+    border-color: rgba(184, 137, 29, 0.45);
+    background: rgba(255, 255, 255, 0.28);
+  }
+
+  .topRow {
+    position: relative;
   }
 
   .top {
     width: 100%;
+    display: block;
     text-align: left;
-    padding: 0.95rem 1rem;
-    background: transparent;
+    padding: 0;
     border: 0;
+    background: transparent;
     color: inherit;
     cursor: pointer;
+    font-family: inherit;
   }
 
-  .top:hover .toggle {
-    opacity: 1;
+  .github {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.85rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: rgba(184, 137, 29, 0.95);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(184, 137, 29, 0.55);
+  }
+
+  .github:hover {
+    border-bottom-color: rgba(184, 137, 29, 0.95);
+  }
+
+  .left {
+    padding: 0.95rem 0.95rem 0.85rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .metaTop {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    padding-right: 5.5rem;
   }
 
   .meta {
-    font-size: 0.9rem;
-    opacity: 0.82;
     display: flex;
-    gap: 0.5rem;
     align-items: center;
-    margin-bottom: 0.35rem;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.95rem;
+    padding-right: 5.5rem;
   }
 
-  h3 {
-    margin: 0;
-    font-size: 1.1rem;
+  .dates {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+      monospace;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .dot {
+    opacity: 0.6;
+  }
+
+  .pageNo {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+      monospace;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .stamp {
+    display: inline-block;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgba(184, 137, 29, 0.45);
+    background: rgba(217, 178, 76, 0.22);
+    font-size: 0.9rem;
+  }
+
+  /* ✅ HERO = actual project name */
+  .projectTitle {
+    margin: 0.1rem 0 0;
+    font-size: 1.35rem;
     letter-spacing: -0.01em;
+    line-height: 1.12;
+    padding-right: 5.5rem;
+  }
+
+  /* ✅ Fun title now clearly secondary */
+  .funLine {
+    color: rgba(30, 26, 18, 0.72);
+    font-style: italic;
+    font-size: 0.98rem;
+    padding-right: 5.5rem;
+  }
+
+  .funOne {
+    font-size: 0.98rem;
+    color: rgba(30, 26, 18, 0.85);
+    padding-right: 5.5rem;
   }
 
   .sub {
-    margin: 0.35rem 0 0;
-    opacity: 0.84;
-    max-width: 75ch;
+    margin: 0;
+    color: var(--muted);
+    max-width: 80ch;
   }
 
   .bottom {
-    margin-top: 0.75rem;
+    margin-top: 0.25rem;
     display: flex;
-    gap: 0.75rem;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
+    gap: 0.75rem;
   }
 
   .stack {
@@ -179,87 +283,61 @@
   }
 
   .chip {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.85rem;
-    padding: 0.15rem 0.4rem;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.05);
+    display: inline-block;
+    padding: 0.22rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 0.9rem;
+    color: rgba(30, 26, 18, 0.85);
   }
 
   .toggle {
-    font-size: 0.9rem;
-    opacity: 0.75;
-    transition: opacity 120ms ease;
+    font-size: 0.95rem;
+    color: rgba(184, 137, 29, 0.95);
     white-space: nowrap;
   }
 
+  .vibe {
+    margin-top: 0.25rem;
+    color: rgba(30, 26, 18, 0.65);
+    font-style: italic;
+    max-width: 85ch;
+  }
+
   .body {
-    max-height: 0px;
-    opacity: 0;
+    border-top: 1px solid var(--line);
+    max-height: 0;
     overflow: hidden;
-    transition: max-height 240ms ease, opacity 200ms ease;
-    border-top: 1px solid rgba(255,255,255,0.10);
+    transition: max-height 220ms ease;
   }
 
   .body.open {
-    max-height: 900px;
-    opacity: 1;
+    max-height: 1400px;
   }
 
   .grid {
-    padding: 0.9rem 1rem 0.4rem;
+    padding: 0.85rem 0.95rem 1rem;
     display: grid;
-    gap: 0.75rem;
+    gap: 0.85rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .grid h4 {
-    margin: 0 0 0.25rem;
-    font-size: 0.92rem;
-    opacity: 0.9;
+  @media (max-width: 780px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  h4 {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
   }
 
   .grid p {
     margin: 0;
-    opacity: 0.85;
-    line-height: 1.45;
-  }
-
-  .links {
-    padding: 0.25rem 1rem 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  a {
-    opacity: 0.9;
-    text-decoration: none;
-    border-bottom: 1px solid rgba(255,255,255,0.18);
-  }
-
-  a:hover {
-    border-bottom-color: rgba(255,255,255,0.42);
-  }
-
-  .dot {
-    opacity: 0.6;
-  }
-
-  @media (max-width: 700px) {
-    .row {
-      grid-template-columns: 1fr;
-    }
-    .inkTrail {
-      display: none;
-    }
-    .margin {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-    }
-    .stamp {
-      margin-top: 0;
-    }
+    color: rgba(30, 26, 18, 0.82);
+    line-height: 1.5;
   }
 </style>
