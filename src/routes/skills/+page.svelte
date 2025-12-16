@@ -1,5 +1,28 @@
-<script>
-    import { base } from '$app/paths';
+<script lang="ts">
+  import { base } from "$app/paths";
+  import { onMount, onDestroy } from "svelte";
+
+  // Update this selector to match your actual compass element
+  const COMPASS_SELECTOR = "#compass, .compass";
+
+  let hintLeft = "90px";
+  let hintTop = "170px";
+
+  function positionHint() {
+    const compassEl = document.querySelector(COMPASS_SELECTOR) as HTMLElement | null;
+    if (!compassEl) return;
+
+    const rect = compassEl.getBoundingClientRect();
+
+    // center hint on compass
+    hintLeft = `${rect.left + rect.width / 2}px`;
+
+    // just under compass
+    hintTop = `${rect.bottom + 8}px`;
+  }
+
+  let cleanup = () => {};
+
   // Organized skills groups based on your resume
   const skills = [
     {
@@ -15,7 +38,6 @@
         { name: "SQL", icon: "/icons/mysql.svg" }
       ]
     },
-
     {
       category: "Developer Tools",
       items: [
@@ -30,7 +52,6 @@
         { name: "HiPerGator (UF HPC)", icon: "/icons/hipergator.svg" }
       ]
     },
-
     {
       category: "Frameworks & Libraries",
       items: [
@@ -46,7 +67,6 @@
         { name: "Jupyter Notebook", icon: "/icons/jupyter.svg" }
       ]
     },
-
     {
       category: "AI & Machine Learning",
       items: [
@@ -59,7 +79,6 @@
         { name: "Amazon Personalize", icon: "/icons/amazon_personalize.svg" }
       ]
     },
-
     {
       category: "Cloud & Systems",
       items: [
@@ -69,7 +88,6 @@
         { name: "Anaconda", icon: "/icons/anaconda.svg" }
       ]
     },
-
     {
       category: "Certifications",
       items: [
@@ -79,10 +97,35 @@
       ]
     }
   ];
+
+  onMount(() => {
+    const onResize = () => positionHint();
+    const onScroll = () => positionHint();
+
+    // Initial + next frame (layout can shift)
+    positionHint();
+    requestAnimationFrame(positionHint);
+
+    window.addEventListener("resize", onResize, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Track compass size/position changes too
+    const compassEl = document.querySelector(COMPASS_SELECTOR) as HTMLElement | null;
+    const ro = compassEl ? new ResizeObserver(() => positionHint()) : null;
+    if (ro && compassEl) ro.observe(compassEl);
+
+    cleanup = () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
+      ro?.disconnect();
+    };
+  });
+
+  onDestroy(() => cleanup());
 </script>
 
 <div class="skills-wrapper">
-  <h1 class="title">Skills & Certifications</h1>
+  <h1 class="title">Skills &amp; Certifications</h1>
 
   {#each skills as group}
     <section class="skill-block">
@@ -91,13 +134,18 @@
       <div class="grid">
         {#each group.items as item}
           <div class="item">
-            <img src={base}{item.icon} alt={item.name} class="icon"/>
+            <img src={`${base}${item.icon}`} alt={item.name} class="icon" />
             <span>{item.name}</span>
           </div>
         {/each}
       </div>
     </section>
   {/each}
+</div>
+
+<!-- Compass hint (auto-centers to the compass element) -->
+<div class="compass-hint" style={`left:${hintLeft}; top:${hintTop};`}>
+  Hover to navigate
 </div>
 
 <style>
@@ -144,5 +192,17 @@
     width: 28px;
     height: 28px;
     filter: sepia(60%);
+  }
+
+  .compass-hint {
+    position: fixed;
+    transform: translateX(-50%);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.15rem;
+    color: #5b1d1d; /* dark red */
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
   }
 </style>

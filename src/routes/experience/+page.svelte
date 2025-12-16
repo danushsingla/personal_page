@@ -1,5 +1,47 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
+  
+
+        // Change this if your compass has a different id/class.
+  // Examples: "#compass", ".compass", ".nav-compass"
+  const COMPASS_SELECTOR = '#compass, .compass';
+
+    let hintLeft = '90px';
+  let hintTop = '170px';
+
+  function positionHint() {
+  const compassEl = document.querySelector(COMPASS_SELECTOR) as HTMLElement | null;
+  if (!compassEl) return;
+
+  const rect = compassEl.getBoundingClientRect();
+
+  // center hint on compass
+  hintLeft = `${rect.left + rect.width / 2}px`;
+
+  // just under compass
+  hintTop = `${rect.bottom + 8}px`;
+}
+
+let cleanup = () => {};
+
+onMount(() => {
+  const onResize = () => positionHint();
+  const onScroll = () => positionHint();
+
+  positionHint();
+  requestAnimationFrame(positionHint);
+
+  window.addEventListener("resize", onResize, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  cleanup = () => {
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("scroll", onScroll);
+  };
+});
+
+onDestroy(() => cleanup());
+
 
   type ThreadId = "Systems" | "Embedded" | "Robotics" | "Product" | "Writing";
   const threads: ThreadId[] = ["Systems", "Embedded", "Robotics", "Product", "Writing"];
@@ -485,6 +527,14 @@
   </div>
 </section>
 
+<!-- Compass hint (auto-centers to the compass element) -->
+<div
+  class="compass-hint"
+  style="left: {hintLeft}; top: {hintTop};"
+>
+  Hover to navigate
+</div>
+
 <style>
   .wrap {
     max-width: 1100px;
@@ -675,6 +725,18 @@
     text-underline-offset: 3px;
   }
   .pubLink:hover { opacity: 0.85; }
+
+      .compass-hint {
+    position: fixed;
+    transform: translateX(-50%);
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.15rem;
+    color: #5b1d1d;          /* dark red */
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.08);
+      }
 
   @media (max-width: 900px) {
     .wrap { padding-left: 1.25rem; padding-top: 3.5rem; }
